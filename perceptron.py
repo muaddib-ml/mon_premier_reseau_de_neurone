@@ -21,21 +21,24 @@ def sigmoid(x):
 
 class Perceptron:
     def __init__(self, W, bias, activation):
-        self.W = W
-        self.n = len(self.W)
+        self.W = W  # weight vector without the bias
+        self.n = len(self.W)    # length of the vector
         self.bias = bias
-        self.activation = activation
-        self.learning_rate = 0.1
-        self.epochs = 50
+        self.activation = activation    # the activation function
+        self.learning_rate = 0.1 
+        self.epochs = 50    # number of times the whole training is done
 
     def wheighted_sum(self, X):
         return sum(X[i] * self.W[i] for i in range(self.n)) + self.bias
     
-    def propagate(self, X):
+    def output(self, X):
+        # returns the binary output given the input vector X
         z = self.wheighted_sum(X)
         return self.activation(z)
 
-    def fit(self, points):
+    def learn(self, points):
+        # simple learning algorithm taken from https://en.wikipedia.org/wiki/Perceptron#Learning_algorithm_for_a_single-layer_perceptron
+
         data_length = len(points)
 
         # repeat across multiple epochs
@@ -46,7 +49,7 @@ class Perceptron:
                 point = points[i]
                 X = [point.x, point.y]
                 y = point.value
-                y_hat = self.propagate(X)
+                y_hat = self.output(X)
                 error = y - y_hat
 
                 # update each weight and the bias
@@ -56,6 +59,7 @@ class Perceptron:
                 self.bias = self.bias + self.learning_rate * error
 
     def get_equation(self):
+        # returns the equation defined by the weights and bias of the perceptron
         # the equation is given by w0*x + w1*y + bias = 0
         # putting y on the other side we get y = -(w0*x + bias) / w1
         y = lambda x: -(self.W[0] * x + self.bias) / self.W[1]
@@ -64,11 +68,14 @@ class Perceptron:
     def __str__(self):
         return f"Weights: {' '.join(str(w) for w in self.W)}\nbias: {self.bias}\nactivation function: {self.activation.__name__}"
 
+# simple Point2d class, the extra value is used to classify the point
 class Point2d:
     def __init__(self, x, y, value):
         self.x = x
         self.y = y
         self.value = value
+
+# Below are helper functions for plotting data
 
 def plot_points(points):
     # scatter plot of all the points (red = 0, blue = 1)
@@ -83,7 +90,7 @@ def plot_perceptron_classifier(perceptron, x_range):
     plt.plot(x, y)
 
 def classify_point(x, y, perceptron):
-    value = perceptron.propagate([x, y])
+    value = perceptron.output([x, y])
     return Point2d(x, y, value)
 
 def generate_random_points(n, x_range, y_range, perceptron):
@@ -110,7 +117,7 @@ if __name__ == "__main__":
     ]
 
     p1 = Perceptron([0, 0], 0, heaviside_nz)
-    p1.fit(points)
+    p1.learn(points)
 
     plot_points(points)
     plot_perceptron_classifier(p1, range(-10, 10))
